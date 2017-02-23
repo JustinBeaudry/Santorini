@@ -5,7 +5,8 @@ using UnityEngine;
 [Serializable]
 public class GameActionController : MonoBehaviour
 {
-	private static GameActionController gameActionController;
+	public String Version = "1.0.0";
+	public static GameActionController gameActionController;
 
 	public enum ActionStates
 	{

@@ -48,8 +48,13 @@ public class KeyboardMouseController : MonoBehaviour
 		if (Input.GetKey (KeyCode.D)) {
 			cameraController.MoveRight ();
 		}
-		if (Input.GetKey (KeyCode.Escape)) {
+		if (Input.GetKeyUp (KeyCode.Escape) && !MatchController.SettingsOpen) {
+			MatchController.SettingsOpen = true;
 			GameManager.LoadSceneAdditive ("Game Options");	
+		}
+		if (Input.GetKeyUp (KeyCode.Escape) && MatchController.SettingsOpen) {
+			MatchController.SettingsOpen = false;
+			GameManager.UnloadSceneAdditive ("Game Options");
 		}
 	}
 }

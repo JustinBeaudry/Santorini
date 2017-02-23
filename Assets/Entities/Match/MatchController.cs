@@ -11,6 +11,7 @@ public class MatchController : MonoBehaviour
 	public Text TimeText;
 	public Text ActionText;
 	public Image PlayerWorkerColor;
+	public static bool SettingsOpen = false;
 
 	private Grid grid;
 	private bool DisplayTime = true;
