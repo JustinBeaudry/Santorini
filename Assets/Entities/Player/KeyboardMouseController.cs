@@ -1,17 +1,15 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class KeyboardMouseController : MonoBehaviour
 {
-	public Camera camera;
-
 	public delegate void ClickAction (Tile tile);
 
 	public static event ClickAction OnClicked;
 
-	Grid grid;
-	CameraController cameraController;
+	public Camera camera;
+
+	private Grid grid;
+	private CameraController cameraController;
 
 	void Awake ()
 	{
@@ -27,7 +25,12 @@ public class KeyboardMouseController : MonoBehaviour
 			if (Physics.Raycast (ray, out hit)) {
 				Node node = grid.NodeFromWorldPoint (hit.point);
 				grid.SelectNode (node);
-				Tile tile = hit.collider.gameObject.GetComponent<Tile> ();
+				Tile tile;
+				if (hit.collider.gameObject.name != "Tile(Clone)") {
+					tile = hit.collider.transform.GetComponentInParent<Tile> ();
+				} else {
+					tile = hit.collider.gameObject.GetComponent<Tile> ();
+				}
 				if (OnClicked != null) {
 					OnClicked (tile);
 				}
@@ -44,6 +47,9 @@ public class KeyboardMouseController : MonoBehaviour
 		}
 		if (Input.GetKey (KeyCode.D)) {
 			cameraController.MoveRight ();
+		}
+		if (Input.GetKey (KeyCode.Escape)) {
+			GameManager.LoadSceneAdditive ("Game Options");	
 		}
 	}
 }

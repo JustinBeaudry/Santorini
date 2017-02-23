@@ -12,7 +12,6 @@ public class Profile : IEquatable<Profile>
 	{
 		ID = Guid.NewGuid ().ToString ();
 		PlayerName = playerName;
-//		WorkerColor = workerColor;
 	}
 
 	public override string ToString ()

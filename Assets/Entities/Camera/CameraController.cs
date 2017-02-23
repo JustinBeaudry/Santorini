@@ -5,7 +5,7 @@ using UnityEngine;
 public class CameraController : MonoBehaviour
 {
 
-	public float speed = 1.0f;
+	public float speed = 2.0f;
 	public GameObject target;
 
 	public void MoveUp ()

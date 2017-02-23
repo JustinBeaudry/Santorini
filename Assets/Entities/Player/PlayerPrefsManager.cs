@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -10,6 +9,7 @@ public class PlayerPrefsManager : MonoBehaviour
 	const string GAME_VOLUME_KEY = "game_volume";
 	const string PROFILES_NAME_KEY = "profiles-name";
 	const string PROFILES_COLOR_KEY = "profiles-color";
+	const string GAME_SAVES_KEY = "game-saves";
 
 	public static void SetMusicVolume (float volume)
 	{
@@ -46,7 +46,7 @@ public class PlayerPrefsManager : MonoBehaviour
 	 */
 	public static void SetProfile (Profile profile)
 	{
-		ProfileCollection profiles = JsonUtility.FromJson<ProfileCollection> (PlayerPrefs.GetString (PROFILES_NAME_KEY));
+		ProfileCollection profiles = GetProfileCollection ();
 		if (profiles == null) {
 			profiles = new ProfileCollection ();
 		}
@@ -54,6 +54,21 @@ public class PlayerPrefsManager : MonoBehaviour
 		String JsonProfiles = JsonUtility.ToJson (profiles);
 		PlayerPrefs.SetString (PROFILES_NAME_KEY, JsonProfiles);
 		PlayerPrefs.Save ();
+	}
+
+	public static void UpdateProfile (Profile profile)
+	{
+		ProfileCollection profiles = GetProfileCollection ();
+		if (profiles != null) {
+			int index = profiles.Index.IndexOf (profile);
+			if (index > -1) {
+				profiles.Index.RemoveAt (index);
+				profiles.Index.Insert (index, profile);
+			}
+			String JsonProfiles = JsonUtility.ToJson (profiles);
+			PlayerPrefs.SetString (PROFILES_NAME_KEY, JsonProfiles);
+			PlayerPrefs.Save ();
+		}
 	}
 
 	static ProfileCollection GetProfileCollection ()
@@ -72,5 +87,42 @@ public class PlayerPrefsManager : MonoBehaviour
 		profiles.Index.Remove (profile);
 		PlayerPrefs.SetString (PROFILES_NAME_KEY, JsonUtility.ToJson (profiles));
 		PlayerPrefs.Save ();
+	}
+
+	public static void SaveGame (String key, GameActionController gameActionController)
+	{
+		GameSaves gameSaves = GetGameSaves ();
+		gameSaves.Index.Add (key, gameActionController);
+		SetGameSaves (gameSaves);
+	}
+
+	public static void SetGameSaves (GameSaves gameSaves)
+	{
+		PlayerPrefs.SetString (GAME_SAVES_KEY, JsonUtility.ToJson (gameSaves));
+		PlayerPrefs.Save ();
+	}
+
+	public static Dictionary<String, GameActionController> GetSaves ()
+	{
+		return GetGameSaves ().Index;
+	}
+
+	public GameActionController LoadGame (String key)
+	{
+		GameSaves gameSaves = GetGameSaves ();
+		GameActionController gameActionController;
+		if (gameSaves.Index.TryGetValue (key, out gameActionController)) {
+			return gameActionController;
+		}
+		return null;
+	}
+
+	private static GameSaves GetGameSaves ()
+	{
+		GameSaves gameSaves = JsonUtility.FromJson<GameSaves> (PlayerPrefs.GetString (GAME_SAVES_KEY));
+		if (gameSaves == null) {
+			gameSaves = new GameSaves ();
+		}
+		return gameSaves;
 	}
 }

@@ -6,6 +6,8 @@ public class GameAction
 {
 	public Player player;
 	public PlayerAction playerAction;
+	public Tile prevTile;
+	public Tile currTile;
 
 	public GameAction (Player _player, PlayerAction _playerAction)
 	{

@@ -151,7 +151,7 @@ public class GameManager : MonoBehaviour
 
 	protected void Update ()
 	{
-		if (updateDelegates [(int)sceneState] != null) {
+		if (updateDelegates != null && sceneState != null && updateDelegates [(int)sceneState] != null) {
 			updateDelegates [(int)sceneState] ();
 		}
 	}

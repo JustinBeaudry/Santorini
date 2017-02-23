@@ -1,79 +1,85 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Threading;
+﻿using System.Collections.Generic;
 using UnityEngine.UI;
 using UnityEngine;
 
 public class MatchController : MonoBehaviour
 {
-
-	public int round = 0;
 	public GameObject Worker;
+	public Material BaseWorkerMaterial;
 	public Text PlayerText;
 	public Text RoundText;
 	public Text TimeText;
 	public Text ActionText;
+	public Image PlayerWorkerColor;
 
-	public enum ActionStates
-	{
-		idle,
-		running,
-		done
-	}
-
-	public ActionStates ActionState = ActionStates.idle;
-
-	private static MatchController matchController;
 	private Grid grid;
-	private Queue<GameAction> GameActions = new Queue<GameAction> ();
 	private bool DisplayTime = true;
 	private bool SettingPlayerWorkers = true;
-	private Player currentPlayer;
 	private int currentRound;
+	//	private float totalTime;
 	private float roundTime;
-	private string playerText;
-	private string actionText;
 
-	public static void SetActionState (ActionStates actionState)
-	{
-		matchController.ActionState = actionState;
+	private string playerText {
+		get {
+			Player player = GameActionController.CurrentPlayer;
+			return player == null ? null : player.Name;
+		}
+	}
+
+	private string actionText {
+		get {
+			GameAction gameAction = GameActionController.CurrentGameAction;
+			return gameAction == null ? "" : gameAction.playerAction.ActionText;
+		}	
+	}
+
+	private Color playerWorkerColor {
+		get {
+			return GameActionController.CurrentPlayer.WorkerColor;
+		}
 	}
 
 	void Awake ()
 	{
 		GameManager.InitGame ();
-		matchController = this;
 		grid = GameObject.Find ("GridManager").GetComponent<Grid> ();
 	}
 
 	void Start ()
 	{
 		foreach (Node n in grid.grid) {
-			TileManager.CreateTileFromWorldPosition (new Vector3 ((float)n.gridX + grid.nodeRadius, 0f, (float)n.gridY + grid.nodeRadius));	
+			Vector3 tilePosition = new Vector3 ((float)n.gridX + grid.nodeRadius, 0f, (float)n.gridY + grid.nodeRadius);
+			TileManager.CreateTileFromWorldPosition (tilePosition);	
 		}
 		currentRound = 1;
 		DisplayTime = false;
 		KeyboardMouseController.OnClicked += SetWorker;
 		foreach (Player player in PlayerManager.Players) {
-			GameActions.Enqueue (new GameAction (player, new PlayerAction ("Set Workers", "Set " + player.MaxWorkers + " Workers.", delegate {
-			})));
+			PlayerAction playerAction = new PlayerAction ("Set Workers", "Set " + player.MaxWorkers + " Workers.", Utils.Noop);
+			GameAction gameAction = new GameAction (player, playerAction);
+			GameActionController.AddAction (gameAction);
 		}
 	}
 
 	void Update ()
 	{
+//		totalTime = Time.timeSinceLevelLoad;
 		roundTime = Time.timeSinceLevelLoad;
 		float minutes = Mathf.Floor (roundTime / 60);
 		float seconds = Mathf.Floor (roundTime > minutes * 60 ? roundTime - (minutes * 60) : roundTime);
 		if (DisplayTime) {
 			TimeText.text = minutes + ":" + seconds.ToString ("0#");
 		}
-		PlayerText.text = playerText;
-		RoundText.text = currentRound.ToString ();
-		ActionText.text = actionText;
 
-//		CheckWinConditions();
-		if (GameActions.Count == 0 && ActionState != ActionStates.running) {
+		if (GameActionController.CurrentPlayer != null) {
+			PlayerText.text = playerText;
+			RoundText.text = currentRound.ToString ();
+			ActionText.text = actionText;
+			PlayerWorkerColor.color = playerWorkerColor;
+		}
+
+		CheckWinConditions ();
+		if (!GameActionController.HasGameActions () && GameActionController.IsIdle ()) {
 			if (SettingPlayerWorkers) {
 				KeyboardMouseController.OnClicked -= SetWorker;
 				DisplayTime = true;
@@ -83,12 +89,8 @@ public class MatchController : MonoBehaviour
 			}
 			SetPlayerActions ();
 		}
-		if (GameActions.Count > 0 && ActionState != ActionStates.running) {
-			ActionState = ActionStates.running;
-			GameAction gameAction = GameActions.Dequeue ();	
-			currentPlayer = gameAction.player;
-			playerText = gameAction.player.Name;
-			actionText = gameAction.playerAction.ActionText;
+		if (GameActionController.HasGameActions () && GameActionController.IsIdle ()) {
+			GameAction gameAction = GameActionController.NextAction ();
 			gameAction.playerAction.Action ();
 		}
 	}
@@ -96,11 +98,9 @@ public class MatchController : MonoBehaviour
 	void SetPlayerActions ()
 	{
 		foreach (Player player in PlayerManager.Players) {
-			Debug.Log ("Setting PlayerActions: " + player.PlayerActions.Count);
 			foreach (PlayerAction playerAction in player.PlayerActions) {
-				GameActions.Enqueue (new GameAction (player, playerAction));	
+				GameActionController.AddAction (new GameAction (player, playerAction));
 			}
-			Debug.Log ("Set PlayerActions: " + player.PlayerActions.Count);
 		}
 	}
 
@@ -108,23 +108,37 @@ public class MatchController : MonoBehaviour
 	{
 		if (tile != null && !tile.HasWorker ()) {
 			GameObject worker = Instantiate (Worker, tile.transform);
+
+			// Set worker color
+			Material workerMaterial = new Material (BaseWorkerMaterial); 
+			workerMaterial.color = GameActionController.CurrentPlayer.WorkerColor;
+			worker.GetComponent<MeshRenderer> ().material = workerMaterial;
+
+			// Set worker position
 			worker.transform.localPosition = new Vector3 (0, 0.25f, 0);
-			currentPlayer.Workers.Add (worker.GetComponent<Worker> ());
-			Debug.Log (currentPlayer.Workers);
+
+			// Get Worker Component
+			Worker _worker = worker.GetComponent<Worker> ();
+
+			// Set reference to workers tile
+			_worker.CurrentTile = tile;
+
+			// Add worker to player
+			GameActionController.CurrentPlayer.Workers.Add (_worker);
 		}
-		if (currentPlayer.Workers.Count == 2) {
-			ActionState = ActionStates.done;
+		if (GameActionController.CurrentPlayer.Workers.Count == 2) {
+			GameActionController.SetActionIdle ();
 		}
 	}
 
 	void CheckWinConditions ()
 	{
-		foreach (Player player in PlayerManager.Players) {
-			foreach (WinCondition condition in player.WinConditions) {
-				if (condition.DoCheck ()) {
-					Debug.Log ("Win!");
+		if (GameActionController.HasGameActions ()) {
+			foreach (Player player in PlayerManager.Players) {
+				foreach (WinCondition winCondition in player.WinConditions) {
+					winCondition.DoCheck ();
 				}
 			}
-		}	
+		}
 	}
 }

@@ -11,11 +11,16 @@ public class MatchSettingsController : MonoBehaviour
 	public Text EmptyProfilesText;
 	public GameObject ProfilesContainer;
 	public GameObject PlayersContainer;
-	public GameObject ProfileTemplate;
+	public GameObject PlayersObject;
+	public GameObject ProfileUITemplate;
+	public GameObject ColorPicker;
 	public Scrollbar ProfileScroll;
 
 	public List<Profile> profiles = new List<Profile> ();
 	public List<Profile> selected = new List<Profile> ();
+
+	private Profile currentProfile;
+	private ProfileUI currentObj;
 
 	void Awake ()
 	{
@@ -36,8 +41,8 @@ public class MatchSettingsController : MonoBehaviour
 
 	void BindActionHandlers ()
 	{
-		StartMatch.onClick.AddListener (OnStartMatch);
 		AddProfile.onClick.AddListener (OnAddProfile);
+		StartMatch.onClick.AddListener (OnStartMatch);
 		BackButton.onClick.AddListener (OnBack);
 	}
 
@@ -59,8 +64,11 @@ public class MatchSettingsController : MonoBehaviour
 	void RenderProfiles ()
 	{
 		ClearProfiles ();
-		float offset = 125f;
-		float selectedOffset = 110f;
+
+		const float padding = 5f;
+		Offset profileOffset = new Offset (120f);
+		Offset selectedOffset = new Offset (105f);
+
 		if (profiles.Count == 0) {
 			Text text = Instantiate (EmptyProfilesText, ProfilesContainer.transform);
 			text.GetComponent<RectTransform> ().anchoredPosition = new Vector2 (0f, 80f);
@@ -68,13 +76,11 @@ public class MatchSettingsController : MonoBehaviour
 		} else {
 			ProfileScroll.interactable = true;
 			foreach (Profile profile in profiles) {
-				GameObject obj = Instantiate (ProfileTemplate, ProfilesContainer.transform);
-				RectTransform rect = obj.GetComponent<RectTransform> ();
-				Text text = obj.GetComponentInChildren<Text> ();
-				Button selectBtn = obj.transform.Find ("Select Profile Button").GetComponent<Button> ();
-				Button removeBtn = obj.transform.Find ("Remove Profile Button").GetComponent<Button> ();
-				text.text = profile.PlayerName;
-				selectBtn.onClick.AddListener (delegate {
+				ProfileUI obj = new ProfileUI (Instantiate (ProfileUITemplate, ProfilesContainer.transform), profileOffset, padding);
+				SetCurrent (profile, obj);
+				RenderProfileData ();
+
+				obj.selectBtn.onClick.AddListener (delegate {
 					if (selected.Contains (profile)) {
 						selected.Remove (profile);
 						RenderProfiles ();
@@ -86,13 +92,40 @@ public class MatchSettingsController : MonoBehaviour
 					selected.Add (profile);
 					RenderProfiles ();
 				});
-				removeBtn.onClick.AddListener (delegate {
+				obj.removeBtn.onClick.AddListener (delegate {
+					profiles.Remove (profile);
 					selected.Remove (profile);
 					PlayerPrefsManager.RemoveProfile (profile);
 					RenderProfiles ();
 				});
-				rect.anchoredPosition = new Vector2 (0f, offset);
-				offset -= (rect.rect.height + 5f);
+				obj.setColorBtn.onClick.AddListener (delegate {
+					SetCurrent (profile, obj);
+
+					// Hack color picker to have the existing color selected
+//					GameObject presetColorPicker = ColorPicker.transform.FindChild ("PresetColorPicker").gameObject;
+//					InputField R = presetColorPicker.transform.FindChild ("InputField_R").GetComponent<InputField> ();
+//					InputField G = presetColorPicker.transform.FindChild ("InputField_G").GetComponent<InputField> ();
+//					InputField B = presetColorPicker.transform.FindChild ("InputField_B").GetComponent<InputField> ();
+//					R.text = profile.WorkerColor.r.ToString ();
+//					G.text = profile.WorkerColor.g.ToString ();
+//					B.text = profile.WorkerColor.b.ToString ();
+
+					PlayersObject.SetActive (false);
+					ColorPicker.SetActive (true);
+
+					Button saveBtn = ColorPicker.transform.FindChild ("Save Button").GetComponent<Button> ();
+					saveBtn.onClick.AddListener (delegate {
+						PlayerPrefsManager.UpdateProfile (currentProfile);
+						ColorPicker.SetActive (false);	
+						PlayersObject.SetActive (true);
+						RenderProfiles ();
+					});
+					Button cancelBtn = ColorPicker.transform.FindChild ("Cancel Button").GetComponent<Button> ();
+					cancelBtn.onClick.AddListener (delegate {
+						ColorPicker.SetActive (false);
+						PlayersObject.SetActive (true);
+					});
+				});
 			}
 		}
 		if (selected.Count == 0) {
@@ -100,21 +133,33 @@ public class MatchSettingsController : MonoBehaviour
 			text.GetComponent<RectTransform> ().anchoredPosition = Vector2.zero;
 		} else {
 			foreach (Profile profile in selected) {
-				GameObject obj = Instantiate (ProfileTemplate, PlayersContainer.transform);
-				RectTransform rect = obj.GetComponent<RectTransform> ();
-				Text text = obj.GetComponentInChildren<Text> ();
-				Button selectBtn = obj.transform.Find ("Select Profile Button").GetComponent<Button> ();
-				Button removeBtn = obj.transform.Find ("Remove Profile Button").GetComponent<Button> ();
-				text.text = profile.PlayerName;
-				selectBtn.interactable = false;
-				removeBtn.onClick.AddListener (delegate {
+				ProfileUI obj = new ProfileUI (Instantiate (ProfileUITemplate, PlayersContainer.transform), selectedOffset, padding);
+				SetCurrent (profile, obj);
+				RenderProfileData ();
+
+				obj.selectBtn.interactable = false;
+				obj.setColorBtn.interactable = false;
+				obj.removeBtn.onClick.AddListener (delegate {
+					SetCurrent (profile, obj);
 					selected.Remove (profile);
 					RenderProfiles ();
 				});
-				rect.anchoredPosition = new Vector2 (0f, selectedOffset);
-				selectedOffset -= (rect.rect.height + 5f);	
 			}
 		}
+	}
+
+	void RenderProfileData ()
+	{
+		if (currentObj != null && currentProfile != null) {
+			currentObj.SetText (currentProfile.PlayerName);
+			currentObj.SetColor (currentProfile.WorkerColor);	
+		}
+	}
+
+	void SetCurrent (Profile profile, ProfileUI obj)
+	{
+		currentProfile = profile;
+		currentObj = obj;
 	}
 
 	void OnAddProfile ()
@@ -129,6 +174,12 @@ public class MatchSettingsController : MonoBehaviour
 		RenderProfiles ();
 	}
 
+	public void OnSetColor (Color color)
+	{
+		currentProfile.WorkerColor = color;
+		RenderProfileData ();
+	}
+
 	void OnStartMatch ()
 	{
 		// now that we have some profiles ready, let's create player instances for those profiles
@@ -139,5 +190,56 @@ public class MatchSettingsController : MonoBehaviour
 	void OnBack ()
 	{
 		GameManager.SwitchScene ("Menu", false);
+	}
+
+	private class Offset
+	{
+		public float value;
+
+		public Offset (float offset)
+		{
+			value = offset;
+		}
+	}
+
+	private class ProfileUI
+	{
+		public RectTransform rect;
+		public Text text;
+		public Button selectBtn;
+		public Button removeBtn;
+		public Button setColorBtn;
+
+		public override string ToString ()
+		{
+			return JsonUtility.ToJson (this);
+		}
+
+		public ProfileUI (GameObject obj, Offset offset, float padding)
+		{
+			rect = obj.GetComponent<RectTransform> ();
+			text = obj.GetComponentInChildren<Text> ();
+			selectBtn = obj.transform.FindChild ("Select Profile Button").GetComponent<Button> ();
+			removeBtn = obj.transform.FindChild ("Remove Profile Button").GetComponent<Button> ();
+			setColorBtn = obj.transform.FindChild ("Color Picker Button").GetComponent<Button> ();
+
+			rect.anchoredPosition = new Vector2 (0f, offset.value);
+			offset.value -= (rect.rect.height + padding);
+		}
+
+		public void SetText (string txt)
+		{
+			text.text = txt;
+		}
+
+		public void SetColor (Color color)
+		{
+			ColorBlock colorBlock = ColorBlock.defaultColorBlock;
+			colorBlock.normalColor = color;
+			colorBlock.disabledColor = color;
+			colorBlock.highlightedColor = new Color (color.r, color.g, color.b, 0.5f);
+			colorBlock.pressedColor = color;
+			setColorBtn.colors = colorBlock;
+		}
 	}
 }

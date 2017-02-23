@@ -22,6 +22,12 @@ public class TileManager : MonoBehaviour
 		return tile.GetComponent<Tile> ();
 	}
 
+	//	public static Tile GetTileFromWorldPosition (Vector3 worldPosition)
+	//	{
+	//		foreach (Tile tile in tileManager.tiles) {
+	//		}
+	//	}
+
 	public static Tile TileFromWorldPosition (Vector3 worldPosition)
 	{
 		Tile tile = null;
