@@ -65,9 +65,9 @@ public class MatchSettingsController : MonoBehaviour
 	{
 		ClearProfiles ();
 
-		const float padding = 5f;
-		Offset profileOffset = new Offset (120f);
-		Offset selectedOffset = new Offset (105f);
+		const float padding = 0f;
+		Offset profileOffset = new Offset (289.5f);
+		Offset selectedOffset = new Offset (323f);
 
 		if (profiles.Count == 0) {
 			Text text = Instantiate (EmptyProfilesText, ProfilesContainer.transform);
@@ -110,20 +110,17 @@ public class MatchSettingsController : MonoBehaviour
 //					G.text = profile.WorkerColor.g.ToString ();
 //					B.text = profile.WorkerColor.b.ToString ();
 
-					PlayersObject.SetActive (false);
 					ColorPicker.SetActive (true);
 
 					Button saveBtn = ColorPicker.transform.FindChild ("Save Button").GetComponent<Button> ();
 					saveBtn.onClick.AddListener (delegate {
 						PlayerPrefsManager.UpdateProfile (currentProfile);
 						ColorPicker.SetActive (false);	
-						PlayersObject.SetActive (true);
 						RenderProfiles ();
 					});
 					Button cancelBtn = ColorPicker.transform.FindChild ("Cancel Button").GetComponent<Button> ();
 					cancelBtn.onClick.AddListener (delegate {
 						ColorPicker.SetActive (false);
-						PlayersObject.SetActive (true);
 					});
 				});
 			}

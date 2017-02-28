@@ -17,95 +17,108 @@ public class Player : IEquatable<Player>
 	List<PlayerAction> DefaultGameActions = new List<PlayerAction> ();
 	List<WinCondition> DefaultWinConditions = new List<WinCondition> ();
 
-	public Player (string id, string name, Color workerColor, List<PlayerAction> playerActions = null, List<WinCondition> winConditions = null)
+	Grid grid;
+
+	public Player ( string id, string name, Color workerColor, List<PlayerAction> playerActions = null, List<WinCondition> winConditions = null )
 	{
 		// establish default game actions
 		// these will be used until the Pantheon class is completed and players can be assigned God Cards and Powers
-		PlayerAction select = new PlayerAction ("Select Worker", "Select a worker to perform actions with", delegate {
-			KeyboardMouseController.OnClicked += SelectWorker;
-		});
-		PlayerAction move = new PlayerAction ("Move", "Move worker by one space", delegate {
-			KeyboardMouseController.OnClicked += Move;
-		});
-		PlayerAction build = new PlayerAction ("Build", "Build tower by one level by one space", delegate {
-			KeyboardMouseController.OnClicked += Build;
-		});
-		DefaultGameActions.Add (select);
-		DefaultGameActions.Add (move);
-		DefaultGameActions.Add (build);
+		PlayerAction select = new PlayerAction ( "Select Worker", "Select a worker to perform actions with", delegate {
+				ControlDevice.AddInteraction ( SelectWorker );
+			} );
+		PlayerAction move = new PlayerAction ( "Move", "Move worker by one space", delegate {
+				ControlDevice.AddInteraction ( Move );
+			} );
+		PlayerAction build = new PlayerAction ( "Build", "Build tower by one level by one space", delegate {
+				ControlDevice.AddInteraction ( Build );
+			} );
+		DefaultGameActions.Add ( select );
+		DefaultGameActions.Add ( move );
+		DefaultGameActions.Add ( build );
 
 		// establish default win conditions
 		// there is only one default
 		WinCondition win = new WinCondition ();
-		DefaultWinConditions.Add (win);
+		DefaultWinConditions.Add ( win );
 
 		ID = id;
 		Name = name;
 		WorkerColor = workerColor;
-		if (playerActions == null) {
+		if ( playerActions == null )
+		{
 			playerActions = DefaultGameActions;
 		}
-		PlayerActions.AddRange (playerActions);
-		if (winConditions == null) {
+		PlayerActions.AddRange ( playerActions );
+		if ( winConditions == null )
+		{
 			winConditions = DefaultWinConditions;
 		}
-		WinConditions.AddRange (winConditions);
+		WinConditions.AddRange ( winConditions );
 	}
 
 	public override string ToString ()
 	{
-		return JsonUtility.ToJson (this);
+		return JsonUtility.ToJson ( this );
 	}
 
-	public bool Equals (Player player)
+	public bool Equals ( Player player )
 	{
-		return ID.Equals (player.ID);
+		return ID.Equals ( player.ID );
 	}
 
-	public bool IsWorkerOwner (Worker worker)
+	public bool IsWorkerOwner ( Worker worker )
 	{
-		return Workers.Contains (worker);
+		return Workers.Contains ( worker );
 	}
 
-	public void SelectWorker (Tile tile)
+	public void SelectWorker ( Tile tile )
 	{
-		if (tile != null && tile.Worker != null && tile.HasWorker () && this.IsWorkerOwner (tile.Worker)) {
+		if ( tile != null && tile.Worker != null && tile.HasWorker () && this.IsWorkerOwner ( tile.Worker ) )
+		{
 			CurrentWorker = tile.Worker;
-			KeyboardMouseController.OnClicked -= SelectWorker;
+			ControlDevice.RemoveInteraction ( SelectWorker );
 			GameActionController.SetActionIdle ();
 		}
 	}
 
-	public void Move (Tile tile)
+	public void Move ( Tile tile )
 	{
-		if (tile != null && !tile.HasWorker ()) {
+		if ( tile != null && !tile.HasWorker () && TileManager.IsTileNeighbor ( tile ) )
+		{
+			// check the neighbors of the tiles
+
+
 			float offset = 0.25f;
-			int diff = CurrentWorker.CurrentTile.DiffLevelsByInt (tile);
-			if (tile.HasTower ()) {
-				if (diff > 1) {
+			int diff = CurrentWorker.CurrentTile.DiffLevelsByInt ( tile );
+			if ( tile.HasTower () )
+			{
+				if ( diff > 1 )
+				{
 					return;
 				}
 				offset = tile.LevelAsOffset ();
 			}
 			Vector3 target = tile.transform.position;
-			CurrentWorker.transform.position = new Vector3 (target.x, offset, target.z);
-			CurrentWorker.transform.SetParent (tile.transform);
+			CurrentWorker.transform.position = new Vector3 ( target.x, offset, target.z );
+			CurrentWorker.transform.SetParent ( tile.transform );
 			tile.Worker = null;
 			GameActionController.CurrentGameAction.currTile = tile;
 			GameActionController.CurrentGameAction.prevTile = CurrentWorker.CurrentTile;
+			GameActionController.UpdateCurrentHistory ();
 			CurrentWorker.CurrentTile = tile;
-			KeyboardMouseController.OnClicked -= Move;
+			ControlDevice.RemoveInteraction ( Move );
 			GameActionController.SetActionIdle ();
 		}
 	}
 
-	public void Build (Tile tile)
+	public void Build ( Tile tile )
 	{
-		if (tile != null && tile.CanBuild ()) {
+		if ( tile != null && tile.CanBuild () && TileManager.IsTileNeighbor ( tile ) )
+		{
 			tile.Build ();
 			GameActionController.CurrentGameAction.currTile = tile;
 			GameActionController.CurrentGameAction.prevTile = CurrentWorker.CurrentTile;
-			KeyboardMouseController.OnClicked -= Build;
+			ControlDevice.RemoveInteraction ( Build );
 			GameActionController.SetActionIdle ();
 		}
 	}

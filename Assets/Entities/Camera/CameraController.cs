@@ -5,31 +5,31 @@ using UnityEngine;
 public class CameraController : MonoBehaviour
 {
 
-	public float speed = 2.0f;
+	public float speed = 5.0f;
 	public GameObject target;
 
 	public void MoveUp ()
 	{
-		transform.LookAt (target.transform);
-		transform.Translate (new Vector3 (0, speed * Time.deltaTime, speed * Time.deltaTime));
+		transform.LookAt ( target.transform );
+		transform.Translate ( new Vector3 ( 0, speed * Time.deltaTime, speed * Time.deltaTime ) );
 	}
 
 	public void MoveDown ()
 	{
-		transform.LookAt (target.transform);
-		transform.Translate (new Vector3 (0, -speed * Time.deltaTime, -speed * Time.deltaTime));
+		transform.LookAt ( target.transform );
+		transform.Translate ( new Vector3 ( 0, -speed * Time.deltaTime, -speed * Time.deltaTime ) );
 	}
 
 	public void MoveLeft ()
 	{
-		transform.LookAt (target.transform);
-		transform.Translate (new Vector3 (-speed * Time.deltaTime, 0, 0));
+		transform.LookAt ( target.transform );
+		transform.Translate ( new Vector3 ( -speed * Time.deltaTime, 0, 0 ) );
 	}
 
 	public void MoveRight ()
 	{
-		transform.LookAt (target.transform);
-		transform.Translate (new Vector3 (speed * Time.deltaTime, 0, 0));
+		transform.LookAt ( target.transform );
+		transform.Translate ( new Vector3 ( speed * Time.deltaTime, 0, 0 ) );
 	}
 
 	//	void FixedUpdate ()

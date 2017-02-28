@@ -8,6 +8,9 @@ public class GameActionController : MonoBehaviour
 	public String Version = "1.0.0";
 	public static GameActionController gameActionController;
 
+	public Queue<GameAction> Index = new Queue<GameAction> ();
+	public List<GameAction> History = new List<GameAction> ();
+
 	public enum ActionStates
 	{
 		idle,
@@ -16,7 +19,6 @@ public class GameActionController : MonoBehaviour
 
 	public ActionStates ActionState = ActionStates.idle;
 
-	public List<GameAction> History = new List<GameAction> ();
 	public int ActionCursor = -1;
 
 	public static GameAction CurrentGameAction {
@@ -27,37 +29,43 @@ public class GameActionController : MonoBehaviour
 
 	public static GameAction PrevGameAction {
 		get {
-			return gameActionController.CheckActionCursor (-1) ? null : gameActionController.History [gameActionController.ActionCursor - 1];
+			return gameActionController.CheckActionCursor ( 1 ) ? null : gameActionController.History [gameActionController.ActionCursor - 1];
 		}
 	}
 
 	public static Player CurrentPlayer {
 		get {
 			GameAction gameAction = CurrentGameAction;
-			if (gameAction == null) {
+			if ( gameAction == null )
+			{
 				return null;			
 			}
 			return gameAction.player;
 		}
 	}
 
-	public Queue<GameAction> Index = new Queue<GameAction> ();
-
 	void Awake ()
 	{
 		gameActionController = this;
 	}
 
-	public static void AddAction (GameAction gameAction)
+	public static void UpdateCurrentHistory ()
 	{
-		gameActionController.Index.Enqueue (gameAction);
+		GameAction currentGameAction = CurrentGameAction;
+		gameActionController.History.RemoveAt ( gameActionController.ActionCursor );	
+		gameActionController.History.Add ( currentGameAction );
+	}
+
+	public static void AddAction ( GameAction gameAction )
+	{
+		gameActionController.Index.Enqueue ( gameAction );
 	}
 
 	public static GameAction NextAction ()
 	{
 		SetActionRun ();
 		GameAction gameAction = gameActionController.Index.Dequeue ();	
-		gameActionController.History.Add (gameAction);
+		gameActionController.History.Add ( gameAction );
 		gameActionController.ActionCursor++;
 		return gameAction;
 	}
@@ -89,11 +97,11 @@ public class GameActionController : MonoBehaviour
 
 	public override string ToString ()
 	{
-		return JsonUtility.ToJson (this);
+		return JsonUtility.ToJson ( this );
 	}
 
-	private bool CheckActionCursor (int index = 0)
+	private bool CheckActionCursor ( int index = 0 )
 	{
-		return ActionCursor == -1 || History.Count == 0 || (ActionCursor - index) < 0 || (ActionCursor - index) > History.Count;
+		return ActionCursor == -1 || History.Count == 0 || ( ActionCursor - index ) < 0 || ( ActionCursor - index ) > History.Count;
 	}
 }
