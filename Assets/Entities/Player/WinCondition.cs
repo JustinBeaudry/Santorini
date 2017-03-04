@@ -1,6 +1,4 @@
-﻿using UnityEngine;
-
-public class WinCondition
+﻿public class WinCondition
 {
 	public bool DoCheck ()
 	{

@@ -29,6 +29,8 @@ public class PostMatchController : MonoBehaviour
 
 	void OnStart ()
 	{
+		PlayerManager.Players.Clear ();
+		PlayerManager.Init ( ProfilesManager.Profiles );
 		GameManager.SwitchScene ( "Match" );
 	}
 

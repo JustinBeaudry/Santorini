@@ -12,10 +12,10 @@ public class MatchController : MonoBehaviour
 	public Text ActionText;
 	public Image PlayerWorkerColor;
 	public static bool SettingsOpen = false;
+	public static bool SettingPlayerWorkers = true;
 
 	Grid grid;
 	private bool DisplayTime = true;
-	private bool SettingPlayerWorkers = true;
 	private int currentRound;
 	private float totalTime;
 	private float roundTime;
