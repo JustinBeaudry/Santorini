@@ -6,7 +6,7 @@
 		// if the current gameAction is Move
 		// and gameAction.player.CurrentWorker.CurrentTile is Level 2 and the player moves to a tile with Level 3
 		GameAction currAction = GameActionController.CurrentGameAction;
-		if ( currAction != null )
+		if ( currAction != null && currAction.prevTile != null )
 		{
 			if ( currAction.playerAction.ActionText == "Move" )
 			{

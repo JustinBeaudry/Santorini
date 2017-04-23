@@ -67,35 +67,7 @@ public class MatchController : MonoBehaviour
 
 	void Update ()
 	{
-		totalTime = Time.timeSinceLevelLoad;
-		roundTime = Time.timeSinceLevelLoad;
-		float minutes = Mathf.Floor ( roundTime / 60 );
-		float seconds = Mathf.Floor ( roundTime > minutes * 60 ? roundTime - ( minutes * 60 ) : roundTime );
-		if ( TimeText != null && DisplayTime )
-		{
-			TimeText.text = minutes + ":" + seconds.ToString ( "0#" );
-		}
-
-		if ( GameActionController.CurrentPlayer != null )
-		{
-			if ( PlayerText != null )
-			{
-				PlayerText.text = playerText;
-			}
-			if ( RoundText != null )
-			{
-				RoundText.text = currentRound.ToString ();
-			}
-			if ( ActionText != null )
-			{
-				ActionText.text = actionText;
-			}
-			if ( PlayerWorkerColor != null )
-			{
-				PlayerWorkerColor.color = playerWorkerColor;
-			}
-		}
-
+		RenderGameUI ();
 		CheckWinConditions ();
 		if ( !GameActionController.HasGameActions () && GameActionController.IsIdle () )
 		{
@@ -124,6 +96,38 @@ public class MatchController : MonoBehaviour
 			foreach ( PlayerAction playerAction in player.PlayerActions )
 			{
 				GameActionController.AddAction ( new GameAction ( player, playerAction ) );
+			}
+		}
+	}
+
+	void RenderGameUI ()
+	{
+		totalTime = Time.timeSinceLevelLoad;
+		roundTime = Time.timeSinceLevelLoad;
+		float minutes = Mathf.Floor ( roundTime / 60 );
+		float seconds = Mathf.Floor ( roundTime > minutes * 60 ? roundTime - ( minutes * 60 ) : roundTime );
+		if ( TimeText != null && DisplayTime )
+		{
+			TimeText.text = minutes + ":" + seconds.ToString ( "0#" );
+		}
+
+		if ( GameActionController.CurrentPlayer != null )
+		{
+			if ( PlayerText != null )
+			{
+				PlayerText.text = playerText;
+			}
+			if ( RoundText != null )
+			{
+				RoundText.text = currentRound.ToString ();
+			}
+			if ( ActionText != null )
+			{
+				ActionText.text = actionText;
+			}
+			if ( PlayerWorkerColor != null )
+			{
+				PlayerWorkerColor.color = playerWorkerColor;
 			}
 		}
 	}
