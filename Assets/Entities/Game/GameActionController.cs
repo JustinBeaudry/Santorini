@@ -64,7 +64,7 @@ public class GameActionController : MonoBehaviour
 	public static GameAction NextAction ()
 	{
 		SetActionRun ();
-		GameAction gameAction = gameActionController.Index.Dequeue ();	
+		GameAction gameAction = gameActionController.Index.Dequeue ();
 		gameActionController.History.Add ( gameAction );
 		gameActionController.ActionCursor++;
 		return gameAction;
