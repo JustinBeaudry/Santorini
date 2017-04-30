@@ -19,8 +19,9 @@
 		}
 
 		// Alternate Win Condition(s)
-		// (1) If a players worker is unable to move, they lose
-		// (2) If a players worker is unable to build, they lose
+		// (1) If a player has 0 workers, they lose
+		// (2) If a players worker is unable to move, they lose
+		// (3) If a players worker is unable to build, they lose
 		return false;
 	}
 }

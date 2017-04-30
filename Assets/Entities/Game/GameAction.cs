@@ -2,7 +2,7 @@
 using UnityEngine;
 
 [Serializable]
-public class GameAction
+public class GameAction: ICloneable
 {
 	public Player player;
 	public PlayerAction playerAction;
@@ -19,5 +19,9 @@ public class GameAction
 	public override string ToString ()
 	{
 		return JsonUtility.ToJson ( this );
+	}
+
+	public object Clone() {
+		return (GameAction)this.MemberwiseClone();
 	}
 }

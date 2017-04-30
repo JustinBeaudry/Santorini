@@ -37,6 +37,10 @@ public class KeyboardMouseController : ControlDevice
 		{
 			MoveCameraRight ();
 		}
+		if ( Input.GetKey( KeyCode.U ) ) 
+		{
+			Undo();
+		}
 		if ( Input.GetKeyUp ( KeyCode.Escape ) )
 		{
 			if ( MatchController.SettingsOpen )

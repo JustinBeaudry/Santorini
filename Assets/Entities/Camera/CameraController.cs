@@ -5,6 +5,8 @@ using UnityEngine;
 public class CameraController : MonoBehaviour
 {
 
+	// @TODO:  Use fixed positions - SEE https://github.com/JustinBeaudry/Santorini/issues/8
+
 	public float speed = 5.0f;
 	public GameObject target;
 

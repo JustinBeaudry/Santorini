@@ -69,7 +69,6 @@ public class TileManager : MonoBehaviour
 
 	public static bool IsTileNeighbor ( Tile tile )
 	{
-		List<Tile> neighbors = GetNeighbors ( tile );
-		return neighbors.Contains ( tile );
+		return GetNeighbors ( tile ).Contains ( tile );
 	}
 }

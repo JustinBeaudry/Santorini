@@ -8,8 +8,7 @@ public class GameActionController : MonoBehaviour
 	public String Version = "1.0.0";
 	public static GameActionController gameActionController;
 
-	public Queue<GameAction> Index = new Queue<GameAction> ();
-	public List<GameAction> History = new List<GameAction> ();
+	public List<GameAction> Index = new List<GameAction> ();
 
 	public enum ActionStates
 	{
@@ -23,13 +22,19 @@ public class GameActionController : MonoBehaviour
 
 	public static GameAction CurrentGameAction {
 		get {
-			return gameActionController.CheckActionCursor () ? null : gameActionController.History [gameActionController.ActionCursor];
+			if (gameActionController.CheckActionCursor()) {
+				return null;
+			}
+			return gameActionController.Index[gameActionController.ActionCursor];
 		}
 	}
 
 	public static GameAction PrevGameAction {
 		get {
-			return gameActionController.CheckActionCursor ( 1 ) ? null : gameActionController.History [gameActionController.ActionCursor - 1];
+			if (gameActionController.CheckActionCursor(1)) {
+				return null;
+			}
+			return gameActionController.Index[gameActionController.ActionCursor - 1];
 		}
 	}
 
@@ -49,30 +54,30 @@ public class GameActionController : MonoBehaviour
 		gameActionController = this;
 	}
 
-	public static void UpdateCurrentHistory ()
-	{
-		GameAction currentGameAction = CurrentGameAction;
-		gameActionController.History.RemoveAt ( gameActionController.ActionCursor );	
-		gameActionController.History.Add ( currentGameAction );
-	}
-
 	public static void AddAction ( GameAction gameAction )
 	{
-		gameActionController.Index.Enqueue ( gameAction );
+		gameActionController.Index.Add( gameAction );
 	}
 
-	public static GameAction NextAction ()
+	public static void NextAction ()
 	{
 		SetActionRun ();
-		GameAction gameAction = gameActionController.Index.Dequeue ();
-		gameActionController.History.Add ( gameAction );
 		gameActionController.ActionCursor++;
-		return gameAction;
+	}
+
+	public static void UndoAction() {
+		// A player can undo up until "Select Worker"
+		if (CurrentGameAction.playerAction.ActionText != "Select Worker") {
+			gameActionController.ActionCursor--;
+			CurrentPlayer.CurrentWorker = CurrentGameAction.player.CurrentWorker;
+			
+			SetActionRun();
+		}
 	}
 
 	public static bool HasGameActions ()
 	{
-		return gameActionController.Index.Count > 0;
+		return gameActionController.ActionCursor < (gameActionController.Index.Count - 1);
 	}
 
 	public static bool IsRunning ()
@@ -102,6 +107,9 @@ public class GameActionController : MonoBehaviour
 
 	private bool CheckActionCursor ( int index = 0 )
 	{
-		return ActionCursor == -1 || History.Count == 0 || ( ActionCursor - index ) < 0 || ( ActionCursor - index ) > History.Count;
+		return gameActionController.ActionCursor == -1 
+			|| Index.Count == 0
+			|| ( gameActionController.ActionCursor - index ) < 0
+			|| ( gameActionController.ActionCursor - index ) > (Index.Count - 1);
 	}
 }
