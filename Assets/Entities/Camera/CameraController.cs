@@ -5,40 +5,32 @@ using UnityEngine;
 public class CameraController : MonoBehaviour
 {
 
-	// @TODO:  Use fixed positions - SEE https://github.com/JustinBeaudry/Santorini/issues/8
+  // @TODO:  Use fixed positions - SEE https://github.com/JustinBeaudry/Santorini/issues/8
 
-	public float speed = 5.0f;
-	public GameObject target;
+  public float speed = 5.0f;
+  public GameObject target;
 
-	public void MoveUp ()
-	{
-		transform.LookAt ( target.transform );
-		transform.Translate ( new Vector3 ( 0, speed * Time.deltaTime, speed * Time.deltaTime ) );
-	}
+  public void MoveUp()
+  {
+    transform.LookAt(target.transform);
+    transform.Translate(new Vector3(0, speed * Time.deltaTime, speed * Time.deltaTime));
+  }
 
-	public void MoveDown ()
-	{
-		transform.LookAt ( target.transform );
-		transform.Translate ( new Vector3 ( 0, -speed * Time.deltaTime, -speed * Time.deltaTime ) );
-	}
+  public void MoveDown()
+  {
+    transform.LookAt(target.transform);
+    transform.Translate(new Vector3(0, -speed * Time.deltaTime, -speed * Time.deltaTime));
+  }
 
-	public void MoveLeft ()
-	{
-		transform.LookAt ( target.transform );
-		transform.Translate ( new Vector3 ( -speed * Time.deltaTime, 0, 0 ) );
-	}
+  public void MoveLeft()
+  {
+    transform.LookAt(target.transform);
+    transform.Translate(new Vector3(-speed * Time.deltaTime, 0, 0));
+  }
 
-	public void MoveRight ()
-	{
-		transform.LookAt ( target.transform );
-		transform.Translate ( new Vector3 ( speed * Time.deltaTime, 0, 0 ) );
-	}
-
-	//	void FixedUpdate ()
-	//	{
-	//		float x = transform.position.x;
-	//		float y = Mathf.Clamp (transform.position.y, 5.2f, 5.35f);
-	//		float z = transform.position.z;
-	//		transform.position = new Vector3 (x, y, z);
-	//	}
+  public void MoveRight()
+  {
+    transform.LookAt(target.transform);
+    transform.Translate(new Vector3(speed * Time.deltaTime, 0, 0));
+  }
 }
