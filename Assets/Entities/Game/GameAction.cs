@@ -1,27 +1,34 @@
 ﻿using System;
 using UnityEngine;
 
-[Serializable]
-public class GameAction: ICloneable
+public struct GameAction : ICloneable
 {
-	public Player player;
-	public PlayerAction playerAction;
-	public Tile prevTile;
-	public Tile currTile;
-	public int time;
+  public Player Player;
+  public PlayerAction PlayerAction;
+  public Tile StartTile;
+  public Tile EndTile;
+  public int Time;
 
-	public GameAction ( Player _player, PlayerAction _playerAction )
-	{
-		player = _player;
-		playerAction = _playerAction;
-	}
+  public void Initialize(Player player, PlayerAction playerAction)
+  {
+    Player = player;
+    PlayerAction = playerAction;
+  }
 
-	public override string ToString ()
-	{
-		return JsonUtility.ToJson ( this );
-	}
+  public void Clear()
+  {
+    StartTile = null;
+    EndTile = null;
+    Time = 0;
+  }
 
-	public object Clone() {
-		return (GameAction)this.MemberwiseClone();
-	}
+  public override string ToString()
+  {
+    return JsonUtility.ToJson(this);
+  }
+
+  public object Clone()
+  {
+    return (GameAction)this.MemberwiseClone();
+  }
 }

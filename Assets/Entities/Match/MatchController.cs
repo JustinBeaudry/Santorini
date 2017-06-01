@@ -4,15 +4,12 @@ using UnityEngine;
 
 public class MatchController : MonoBehaviour
 {
-  public GameObject Worker;
-  public Material BaseWorkerMaterial;
   public Text PlayerText;
   public Text RoundText;
   public Text TimeText;
   public Text ActionText;
   public Image PlayerWorkerColor;
   public static bool SettingsOpen = false;
-  public static bool MatchStarted = false;
 
   Grid grid;
   public int currentRound;
@@ -32,8 +29,7 @@ public class MatchController : MonoBehaviour
   {
     get
     {
-      GameAction gameAction = GameActionController.CurrentGameAction;
-      return gameAction == null ? "" : gameAction.playerAction.ActionText;
+      return GameActionController.CurrentGameAction.PlayerAction.ActionText;
     }
   }
 
@@ -53,20 +49,9 @@ public class MatchController : MonoBehaviour
 
   void Start()
   {
-    foreach (Node n in grid.grid)
-    {
-      Vector3 tilePosition = new Vector3((float)n.gridX + grid.nodeRadius, 0f, (float)n.gridY + grid.nodeRadius);
-      TileManager.CreateTileFromWorldPosition(tilePosition);
-    }
-    currentRound = 1;
-    foreach (Player player in PlayerManager.Players)
-    {
-      PlayerAction playerAction = new PlayerAction("Set Workers", "Set " + player.MaxWorkers + " Workers.",
-      (Tile tile) => SetWorker(tile));
-      GameAction gameAction = new GameAction(player, playerAction);
-      GameActionController.AddAction(gameAction);
-    }
-    GameActionController.NextAction();
+    CreateTilesFromGrid();
+    ResetRound();
+    SetupGame();
   }
 
   void Update()
@@ -76,13 +61,54 @@ public class MatchController : MonoBehaviour
     CheckGameActions();
   }
 
-  void SetPlayerActions()
+  private void CreateTilesFromGrid()
+  {
+    foreach (Node n in grid.grid)
+    {
+      Vector3 tilePosition = new Vector3((float)n.gridX + grid.nodeRadius, 0f, (float)n.gridY + grid.nodeRadius);
+      TileManager.CreateTileFromWorldPosition(tilePosition);
+    }
+  }
+
+  private void ResetRound()
+  {
+    currentRound = 1;
+  }
+
+  private void SetupGame()
   {
     foreach (Player player in PlayerManager.Players)
     {
+      PlayerAction playerAction = new PlayerAction();
+      playerAction.Initialize("Set Workers", "Set " + player.MaxWorkers + " Workers.", SetWorker);
+
+      GameAction gameAction = new GameAction();
+      gameAction.Initialize(player, playerAction);
+
+      GameActionController.AddAction(gameAction);
+    }
+    GameActionController.NextAction();
+    ControlDevice.AddInteraction(MatchManager.InteractDispatch);
+  }
+
+  void SetPlayerActions()
+  {
+    // Go through each player in the game
+    foreach (Player player in PlayerManager.Players)
+    {
+      // If the player has been set to inactive, don't add any actions for that player
+      if (player.IsInactive())
+      {
+        // nothing to do for this player, but continue looping
+        continue;
+      }
+      // Add each PlayerAction as a GameAction to the GameActionController
       foreach (PlayerAction playerAction in player.PlayerActions)
       {
-        GameActionController.AddAction(new GameAction(player, playerAction));
+        // queue up a GameAction for the player
+        GameAction gameAction = new GameAction();
+        gameAction.Initialize(player, playerAction);
+        GameActionController.AddAction(gameAction);
       }
     }
   }
@@ -119,34 +145,9 @@ public class MatchController : MonoBehaviour
     }
   }
 
-  void SetWorker(Tile tile)
+  void SetWorker(Tile tile, GameAction gameAction)
   {
-    if (tile != null && !tile.HasWorker())
-    {
-      GameObject worker = Instantiate(Worker, tile.transform);
 
-      // Set worker color
-      Material workerMaterial = new Material(BaseWorkerMaterial);
-      workerMaterial.color = GameActionController.CurrentPlayer.WorkerColor;
-      worker.GetComponent<MeshRenderer>().material = workerMaterial;
-
-      // Set worker position
-      worker.transform.localPosition = new Vector3(0, 0.25f, 0);
-
-      // Get Worker Component
-      Worker _worker = worker.GetComponent<Worker>();
-
-      // Set reference to workers tile
-      _worker.CurrentTile = tile;
-
-      // Add worker to player
-      GameActionController.CurrentPlayer.Workers.Add(_worker);
-    }
-    if (GameActionController.CurrentPlayer.Workers.Count == GameActionController.CurrentPlayer.MaxWorkers)
-    {
-      GameActionController.GameActionComplete();
-      MatchStarted = true;
-    }
   }
 
   void CheckWinConditions()
@@ -165,15 +166,14 @@ public class MatchController : MonoBehaviour
 
   void CheckGameActions()
   {
+    Debug.Log("CheckGameActions()");
     if (GameActionController.IsIdle())
     {
+      Debug.Log("GameActionController is Idle");
       if (GameActionController.HasGameActions())
       {
+        Debug.Log("Has GameActions");
         GameActionController.NextAction();
-        if (GameActionController.CurrentGameAction != null)
-        {
-          ControlDevice.AddInteraction(GameActionController.CurrentGameAction.playerAction.Action);
-        }
       }
       else
       {

@@ -4,15 +4,41 @@ using UnityEngine;
 
 public class MatchManager : MonoBehaviour
 {
-
-  public static List<GameActionController> Matches = new List<GameActionController>();
-
-  public static void MatchAction(Tile tile, GameAction gameAction)
+  public static List<Match> Matches = new List<Match>();
+  private static int MatchCursor = -1;
+  private static Match CurrentMatch
   {
-    // Get the worker to do work on
-    Worker worker = gameAction.player.CurrentWorker;
-    GameActionController.CurrentGameAction.currTile = tile;
-    GameActionController.CurrentGameAction.prevTile = worker.CurrentTile;
-    GameActionController.CurrentGameAction.playerAction.Action(tile);
+    get
+    {
+      return Matches[MatchCursor];
+    }
+  }
+
+  private void Awake()
+  {
+
+  }
+
+  public static void NewMatch()
+  {
+    MatchCursor++;
+    Match match = new Match();
+    Matches.Add(match);
+  }
+
+  public static void ReplayActions(GameActionDispatch gameActionDispatch)
+  { }
+
+  public static void CompleteMatch(GameActionDispatch gameActionDispatch, Player winner)
+  {
+    Match match = CurrentMatch;
+    GameActionDispatch completedMatch = (GameActionDispatch)gameActionDispatch.Clone();
+    match.Initialize(completedMatch, winner);
+    Matches.Add(match);
+  }
+
+  public static Match GetLastMatch()
+  {
+    return Matches[MatchCursor - 1];
   }
 }

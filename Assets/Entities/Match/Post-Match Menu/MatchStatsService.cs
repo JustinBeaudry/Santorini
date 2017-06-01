@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 public class MatchStatsService
 {
-  public MatchStats GetStatsFromGameState(GameActionController gameActionController, MatchController matchController)
+  public MatchStats GetStatsFromGameState(MatchController matchController)
   {
     int rounds = matchController.currentRound;
     // @NOTE:  The PlayerManager should not hold a reference to the winning player
     // @TODO:  Move the winning player to the MatchController  
-    Player winner = PlayerManager.WinningPlayer;
+    Player winner = MatchManager.GetLastMatch().Winner;
     return new MatchStats(rounds, winner);
   }
 }

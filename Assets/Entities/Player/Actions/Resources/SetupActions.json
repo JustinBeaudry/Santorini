@@ -1,0 +1,7 @@
+[
+  {
+    "name": "SetWorkers",
+    "text": "Set Workers",
+    "description": "Set #MaxWorker# Workers"
+  }
+]

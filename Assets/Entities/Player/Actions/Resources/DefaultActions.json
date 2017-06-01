@@ -1,0 +1,17 @@
+[
+  {
+    "name": "SelectWorker",
+    "text": "Select Worker",
+    "description": "Select a worker to perform actions with"
+  },
+  {
+    "name": "Move",
+    "text": "Move",
+    "description": "Move worker to an adjacent tile"
+  },
+  {
+    "name": "Build",
+    "text": "Build",
+    "description": "Build on adjacent tile"
+  }
+]

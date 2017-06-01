@@ -30,10 +30,19 @@ public class Tile : MonoBehaviour, ICloneable
 
   void Awake()
   {
-    tTwoOffset = tOneOffset + Tower1.transform.localScale.y;
+    print("tOneOffset: " + tOneOffset);
+    tTwoOffset = tOneOffset * Tower1.transform.localScale.y;
+    print("tTwoOffset: " + tTwoOffset);
+    print("Tower1.transform.localScale.y: " + Tower1.transform.localScale.y);
     tThreeOffset = tTwoOffset + Tower2.transform.localScale.y;
+    print("tThreeOffset: " + tThreeOffset);
+    print("Tower2.transform.localScale.y: " + Tower2.transform.localScale.y);
     domeOffset = tThreeOffset + Tower3.transform.localScale.y - (Dome.transform.localScale.y / 2);
+    print("domeOffset: " + domeOffset);
+    print("Tower3.transform.localScale.y: " + Tower3.transform.localScale.y);
+    print("Dome.transform.localScale.y: " + Dome.transform.localScale.y);
     playerDomeOffset = domeOffset + Tower3.transform.localScale.y;
+    print("playerDomeOffset: " + playerDomeOffset);
   }
 
   void Update()
@@ -44,6 +53,10 @@ public class Tile : MonoBehaviour, ICloneable
 
   public bool CanBuild()
   {
+    if (GameActionController.IsUndo())
+    {
+      return true;
+    }
     if (HasWorker())
     {
       return false;
@@ -62,6 +75,27 @@ public class Tile : MonoBehaviour, ICloneable
         return false;
     }
     return false;
+  }
+
+  public bool CanMove(Worker worker)
+  {
+    Tile startingTile = worker.CurrentTile;
+    bool hasNoWorker = !(this.HasWorker());
+    bool isUndo = GameActionController.IsUndo();
+    bool isNeighbor = TileManager.IsTileNeighbor(this);
+    bool hasWalkableTower = true;
+
+    if (this.HasTower() && startingTile.DiffLevelsByInt(this) > 1)
+    {
+      hasWalkableTower = false;
+    }
+
+    Debug.Log("isUndo " + isUndo);
+    Debug.Log("hasNoWorker " + hasNoWorker);
+    Debug.Log("isNeighbor " + isNeighbor);
+    Debug.Log("hasWalkableTower " + hasWalkableTower);
+
+    return isUndo || (hasNoWorker && isNeighbor && hasWalkableTower);
   }
 
   public void Build()
