@@ -112,13 +112,13 @@ public class MatchSettingsController : MonoBehaviour
 
 					ColorPicker.SetActive (true);
 
-					Button saveBtn = ColorPicker.transform.FindChild ("Save Button").GetComponent<Button> ();
+					Button saveBtn = ColorPicker.transform.Find ("Save Button").GetComponent<Button> ();
 					saveBtn.onClick.AddListener (delegate {
 						PlayerPrefsManager.UpdateProfile (currentProfile);
 						ColorPicker.SetActive (false);	
 						RenderProfiles ();
 					});
-					Button cancelBtn = ColorPicker.transform.FindChild ("Cancel Button").GetComponent<Button> ();
+					Button cancelBtn = ColorPicker.transform.Find ("Cancel Button").GetComponent<Button> ();
 					cancelBtn.onClick.AddListener (delegate {
 						ColorPicker.SetActive (false);
 					});
@@ -216,9 +216,9 @@ public class MatchSettingsController : MonoBehaviour
 		{
 			rect = obj.GetComponent<RectTransform> ();
 			text = obj.GetComponentInChildren<Text> ();
-			selectBtn = obj.transform.FindChild ("Select Profile Button").GetComponent<Button> ();
-			removeBtn = obj.transform.FindChild ("Remove Profile Button").GetComponent<Button> ();
-			setColorBtn = obj.transform.FindChild ("Color Picker Button").GetComponent<Button> ();
+			selectBtn = obj.transform.Find ("Select Profile Button").GetComponent<Button> ();
+			removeBtn = obj.transform.Find ("Remove Profile Button").GetComponent<Button> ();
+			setColorBtn = obj.transform.Find ("Color Picker Button").GetComponent<Button> ();
 
 			rect.anchoredPosition = new Vector2 (0f, offset.value);
 			offset.value -= (rect.rect.height + padding);

@@ -47,7 +47,7 @@ public class Tile : MonoBehaviour, ICloneable
 
   void Update()
   {
-    Transform worker = transform.FindChild("Worker(Clone)");
+    Transform worker = transform.Find("Worker(Clone)");
     Worker = worker == null ? null : worker.GetComponent<Worker>();
   }
 

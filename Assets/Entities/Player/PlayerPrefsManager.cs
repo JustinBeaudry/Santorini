@@ -94,10 +94,10 @@ public class PlayerPrefsManager : MonoBehaviour
     PlayerPrefs.Save();
   }
 
-  public static void SaveGame(String key, GameActionController gameActionController)
+  public static void SaveGame(String key, GameActionDispatch gameActionDispatch)
   {
     GameSaves gameSaves = GetGameSaves();
-    gameSaves.Index.Add(key, gameActionController.Clone() as GameActionController);
+    gameSaves.Index.Add(key, gameActionDispatch.Clone() as GameActionDispatch);
     SetGameSaves(gameSaves);
   }
 
@@ -107,18 +107,18 @@ public class PlayerPrefsManager : MonoBehaviour
     PlayerPrefs.Save();
   }
 
-  public static Dictionary<String, GameActionController> GetSaves()
+  public static Dictionary<String, GameActionDispatch> GetSaves()
   {
     return GetGameSaves().Index;
   }
 
-  public GameActionController LoadGame(String key)
+  public GameActionDispatch LoadGame(String key)
   {
     GameSaves gameSaves = GetGameSaves();
-    GameActionController gameActionController;
-    if (gameSaves.Index.TryGetValue(key, out gameActionController))
+    GameActionDispatch gameActionDispatch;
+    if (gameSaves.Index.TryGetValue(key, out gameActionDispatch))
     {
-      return gameActionController;
+      return gameActionDispatch;
     }
     return null;
   }
